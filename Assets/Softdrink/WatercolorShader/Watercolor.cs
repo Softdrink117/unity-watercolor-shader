@@ -9,26 +9,29 @@ using System.Collections;
 	public class Watercolor : MonoBehaviour {
 	 
 		public float intensity;
+		[Range(0f, 1f)]
+		public float hueClip = 0f;
 		private Material material;
 	 
-		void Awake ()
-		{
+		void Awake (){
 			material = new Material( Shader.Find("Hidden/waterColor_pp") );
 		}
 
-		void SetMaterialProperties(){
+		// void OnValidate(){
+		// 	material.SetFloat("_HueClip", hueClip);
+		// }
 
+		void SetMaterialProperties(){
+			material.SetFloat("_HueClip", hueClip);
 		}
 		
-		void OnRenderImage (RenderTexture source, RenderTexture destination)
-		{
-			if (intensity == 0)
-			{
-				Graphics.Blit (source, destination);
-				return;
-			}
+		void OnRenderImage (RenderTexture source, RenderTexture destination){
+			// if (hueClip <= 0.003f){
+			// 	Graphics.Blit (source, destination);
+			// 	return;
+			// }
 	 
-			material.SetFloat("_bwBlend", intensity);
+			//material.SetFloat("_HueClip", hueClip);
 			Graphics.Blit (source, destination, material);
 		}
 	}
