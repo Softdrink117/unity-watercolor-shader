@@ -9,29 +9,55 @@ using System.Collections;
 	public class Watercolor : MonoBehaviour {
 	 
 		public float intensity;
-		[Range(0f, 1f)]
-		public float hueClip = 0f;
+
+		[HeaderAttribute("Sampling Settings")]
+
+		[Range(0f, 0.99f)]
+		public float lowThreshold = 0f;
+		[Range(0.01f, 1.0f)]
+		public float highThreshold = 1.0f;
+
+		[HeaderAttribute("Debug")]
+
+		public bool debugSelectionView = false;
+
+
 		private Material material;
+
+		private bool propertyChange = false;
 	 
 		void Awake (){
 			material = new Material( Shader.Find("Hidden/waterColor_pp") );
+			SetMaterialProperties();
 		}
 
-		// void OnValidate(){
-		// 	material.SetFloat("_HueClip", hueClip);
-		// }
+		void OnValidate(){
+			// Enforce logical values for thresholds
+			if(lowThreshold > highThreshold) lowThreshold = highThreshold - 0.001f;
+			if(highThreshold < lowThreshold) highThreshold = lowThreshold + 0.001f;
+
+			propertyChange = true;
+		}
 
 		void SetMaterialProperties(){
-			material.SetFloat("_HueClip", hueClip);
+			material.SetFloat("_LowThreshold", lowThreshold);
+			material.SetFloat("_HighThreshold", highThreshold);
+
+			if(debugSelectionView){
+				material.SetFloat("_DebugSelection", 1f);
+				material.EnableKeyword("DEBUG_SELECTION");
+			}else{
+				material.SetFloat("_DebugSelection", 0f);
+				material.DisableKeyword("DEBUG_SELECTION");
+			}
 		}
 		
 		void OnRenderImage (RenderTexture source, RenderTexture destination){
-			// if (hueClip <= 0.003f){
-			// 	Graphics.Blit (source, destination);
-			// 	return;
-			// }
+			if(propertyChange){
+				SetMaterialProperties();
+				propertyChange = false;
+			}
 	 
-			//material.SetFloat("_HueClip", hueClip);
 			Graphics.Blit (source, destination, material);
 		}
 	}
